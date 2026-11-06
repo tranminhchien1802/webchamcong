@@ -21,7 +21,7 @@ LOG_LEVELS = {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG"}
 class Settings:
     """Configuration used by the face encoding and recognition services."""
 
-    recognition_tolerance: float = 0.55
+    recognition_tolerance: float = 0.45
     detection_model: DetectionModel = "hog"
     encoding_model: EncodingModel = "small"
     number_of_times_to_upsample: int = 1

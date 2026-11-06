@@ -175,7 +175,7 @@ environment variables:
 | Variable | Default | Description |
 | --- | --- | --- |
 | `FACE_DATA_DIR` | `data` | Directory containing the CSV files |
-| `FACE_RECOGNITION_TOLERANCE` | `0.55` | Maximum distance accepted as a match |
+| `FACE_RECOGNITION_TOLERANCE` | `0.45` | Conservative maximum distance accepted as a match |
 | `FACE_RECOGNITION_FRAME_SCALE` | `0.5` | Scale applied before live recognition |
 | `FACE_DETECTION_MODEL` | `hog` | Face detector: `hog` or `cnn` |
 | `FACE_ANTI_SPOOFING_ENABLED` | `true` | Run DeepFace's anti-spoofing check before identity recognition |

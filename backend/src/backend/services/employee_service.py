@@ -6,6 +6,8 @@ import logging
 from datetime import date, datetime
 from typing import Callable
 
+import numpy as np
+
 from backend.models.domain import Employee
 from backend.models.schemas import EmployeeAttendance, EmployeeCreated
 from backend.repositories.interfaces import EmployeeRepository
@@ -17,6 +19,10 @@ logger = logging.getLogger(__name__)
 
 
 class InvalidEmployeeNameError(ValueError):
+    pass
+
+
+class DuplicateFaceError(ValueError):
     pass
 
 
@@ -47,6 +53,18 @@ class EmployeeService:
             len(image),
         )
         encoded_face = self._face_encoder.encode(image)
+        candidate_encoding = np.asarray(encoded_face.encoding, dtype=np.float64)
+        for existing in self._employees.list_all():
+            existing_encoding = np.asarray(existing.face_encoding, dtype=np.float64)
+            if (
+                existing_encoding.shape != (128,)
+                or not np.isfinite(existing_encoding).all()
+            ):
+                continue
+            if float(np.linalg.norm(candidate_encoding - existing_encoding)) <= 0.05:
+                raise DuplicateFaceError(
+                    f"this face is already enrolled as {existing.name!r}"
+                )
         logger.info(
             "Enrollment face encoded | name=%r | face_location=%s",
             normalized_name,

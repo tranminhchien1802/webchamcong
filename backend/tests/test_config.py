@@ -9,7 +9,7 @@ class SettingsTests(unittest.TestCase):
     def test_defaults_are_valid(self) -> None:
         settings = Settings()
 
-        self.assertEqual(settings.recognition_tolerance, 0.55)
+        self.assertEqual(settings.recognition_tolerance, 0.45)
         self.assertEqual(settings.detection_model, "hog")
         self.assertEqual(settings.recognition_frame_scale, 0.5)
 

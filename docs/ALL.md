@@ -243,7 +243,7 @@ For each submitted camera frame:
 7. Accept the identity only when the smallest distance is at or below the configured tolerance.
 8. Mark the matched employee as arrived if not already marked for the current day.
 
-Start with a tolerance of `0.5` or `0.55` and test it with real employee photos. A smaller value is stricter; the library's common default of `0.6` can produce more false matches in an attendance system.
+This app uses a conservative tolerance of `0.45` to reduce false attendance matches. A smaller value is stricter and may reject genuine faces, so validate it with representative employee photos and camera frames before production use.
 
 To reduce accidental attendance updates, the prototype may require the same employee to be recognized in two or three recent frames before marking arrival. This is recommended even though a single-frame match is simpler.
 
