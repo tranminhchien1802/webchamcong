@@ -1,0 +1,10 @@
+C:\speego\Face_detection_attendance\backend\.venv\Lib\site-packages\face_recognition_models\__init__.py:7: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
+  from pkg_resources import resource_filename
+2026-11-06 15:25:38,225 | INFO | backend.repositories.employee_csv | Employee CSV ready | path=C:\speego\Face_detection_attendance\backend\data\employees.csv
+2026-11-06 15:25:38,226 | INFO | backend.repositories.attendance_csv | Attendance CSV ready | path=C:\speego\Face_detection_attendance\backend\data\attendance.csv
+2026-11-06 15:25:38,227 | INFO | backend.main | Backend started | storage=csv | data_dir=C:\speego\Face_detection_attendance\backend\data | employees_csv=C:\speego\Face_detection_attendance\backend\data\employees.csv | attendance_csv=C:\speego\Face_detection_attendance\backend\data\attendance.csv | employees_loaded=7 | tolerance=0.450 | detection_model=hog | anti_spoofing=True
+INFO:     Started server process [33684]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+2026-11-06 15:25:46,581 | INFO | backend.main | Request completed | method=GET | path=/docs | status=200 | duration_ms=0.3
