@@ -190,20 +190,22 @@ outbound access and enough runtime memory for PyTorch and the model.
 
 The backend supports Supabase PostgreSQL. To set up a new Supabase project:
 
-1. Create a project in Supabase.
+1. Open your Supabase project.
 2. In the project's **SQL Editor**, run [`backend/supabase/schema.sql`](backend/supabase/schema.sql).
    This creates the `employees` and `attendance` tables, employee ID sequence,
    uniqueness constraints, and service-role-only access.
-3. Set the following variables in the backend's PowerShell session, replacing
-   the placeholders with values from your Supabase project:
+3. In **Project Settings → API Keys**, copy the server-side **Secret key**. A
+   publishable key is for public clients and cannot access these service-role-only
+   tables through this backend.
+4. Set the backend variables in PowerShell:
 
    ```powershell
    $env:STORAGE_BACKEND = "supabase"
-   $env:SUPABASE_URL = "https://<project-ref>.supabase.co"
-   $env:SUPABASE_SECRET_KEY = "<server-only-secret-key>"
+   $env:SUPABASE_URL = "https://crcqyaphmaxgkrhffevl.supabase.co"
+   $env:SUPABASE_SECRET_KEY = "<sb_secret_server_key>"
    ```
 
-4. Start the backend from `backend/` as usual. Keep `SUPABASE_SECRET_KEY` on
+5. Start the backend from `backend/` as usual. Keep `SUPABASE_SECRET_KEY` on
    the backend only; never put it in frontend variables or commit it to Git.
 
 The app will write new enrollments and attendance to Supabase when started with
