@@ -12,11 +12,13 @@ interface FrameSize {
 }
 
 interface UseCameraRecognitionOptions {
+  action: 'in' | 'out'
   recognitionEnabled: boolean
   onAttendanceUpdated: () => void
 }
 
 export function useCameraRecognition({
+  action,
   recognitionEnabled,
   onAttendanceUpdated,
 }: UseCameraRecognitionOptions) {
@@ -25,6 +27,7 @@ export function useCameraRecognition({
   const activeRequestRef = useRef<AbortController | null>(null)
   const requestGenerationRef = useRef(0)
   const busyRef = useRef(false)
+  const actionRef = useRef(action)
   const [cameraState, setCameraState] = useState<CameraState>('idle')
   const [recognitionState, setRecognitionState] = useState<RecognitionState>('idle')
   const [faces, setFaces] = useState<RecognizedFace[]>([])
@@ -38,10 +41,19 @@ export function useCameraRecognition({
     streamRef.current?.getTracks().forEach((track) => track.stop())
     streamRef.current = null
     if (videoRef.current) videoRef.current.srcObject = null
-    busyRef.current = false
     setFaces([])
+    setError(null)
     setRecognitionState('idle')
     setCameraState('idle')
+  }, [])
+
+  const changeAction = useCallback((nextAction: 'in' | 'out') => {
+    actionRef.current = nextAction
+    requestGenerationRef.current += 1
+    activeRequestRef.current?.abort()
+    setFaces([])
+    setError(null)
+    setRecognitionState('idle')
   }, [])
 
   const startCamera = useCallback(async () => {
@@ -113,6 +125,8 @@ export function useCameraRecognition({
       return
     }
 
+    const generation = requestGenerationRef.current
+    const requestAction = actionRef.current
     busyRef.current = true
     setRecognitionState('recognizing')
     try {
@@ -129,6 +143,7 @@ export function useCameraRecognition({
         canvas.toBlob(resolve, 'image/jpeg', 0.82),
       )
       if (!blob) throw new Error('The browser could not encode the camera frame.')
+      if (generation !== requestGenerationRef.current) return
 
       const controller = new AbortController()
       activeRequestRef.current = controller
@@ -137,7 +152,8 @@ export function useCameraRecognition({
         height,
         bytes: blob.size,
       })
-      const result = await recognizeFrame(blob, controller.signal)
+      const result = await recognizeFrame(blob, controller.signal, requestAction)
+      if (generation !== requestGenerationRef.current) return
       console.info('[recognition] Result received', {
         faces: result.faces.length,
         matched: result.faces.filter((face) => face.employee_id !== null).length,
@@ -155,6 +171,7 @@ export function useCameraRecognition({
       setError(null)
       if (result.attendance_updated.length > 0) onAttendanceUpdated()
     } catch (requestError) {
+      if (generation !== requestGenerationRef.current) return
       if (requestError instanceof DOMException && requestError.name === 'AbortError') return
       console.error('[recognition] Camera frame failed', requestError)
       const message = requestError instanceof Error ? requestError.message : 'Recognition failed.'
@@ -177,11 +194,8 @@ export function useCameraRecognition({
   }, [onAttendanceUpdated, recognitionEnabled])
 
   useEffect(() => {
-    // Browser media access is the external synchronization owned by this effect.
-    // oxlint-disable-next-line react/set-state-in-effect
-    void startCamera()
     return stopCamera
-  }, [startCamera, stopCamera])
+  }, [stopCamera])
 
   useEffect(() => {
     if (cameraState !== 'active' || !recognitionEnabled) return
@@ -212,5 +226,6 @@ export function useCameraRecognition({
     error,
     startCamera,
     stopCamera,
+    changeAction,
   }
 }

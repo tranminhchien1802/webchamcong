@@ -10,10 +10,12 @@ function formatAttendanceTime(value: string): string {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
+    timeZone: 'Asia/Ho_Chi_Minh',
   }).format(new Date(value))
 }
 
 export function AttendanceTab() {
+  const [action, setAction] = useState<'in' | 'out'>('in')
   const [employees, setEmployees] = useState<EmployeeAttendance[]>([])
   const [loading, setLoading] = useState(true)
   const [listError, setListError] = useState<string | null>(null)
@@ -44,7 +46,8 @@ export function AttendanceTab() {
   }, [refreshEmployees])
 
   const camera = useCameraRecognition({
-    recognitionEnabled: employees.length > 0,
+    action,
+    recognitionEnabled: employees.length > 0 && !listError,
     onAttendanceUpdated: refreshEmployees,
   })
   const recognizedEmployees = new Map<string, string>()
@@ -60,12 +63,17 @@ export function AttendanceTab() {
     <section className="panel" aria-labelledby="attendance-title">
       <div className="panel-header">
         <div>
-          <h2 id="attendance-title">Attendance camera</h2>
-          <p>Employees are checked in automatically after a verified match.</p>
+          <h2 id="attendance-title">Chấm công khuôn mặt</h2>
+          <p>Chọn Vào ca hoặc Ra ca rồi nhìn vào camera. Giờ Việt Nam được ghi từ máy chủ.</p>
         </div>
         <span className="status-pill">Live session</span>
       </div>
 
+      <div className="tabs" role="group" aria-label="Loại chấm công">
+        <button type="button" className={action === 'in' ? 'tab active' : 'tab'} aria-pressed={action === 'in'} onClick={() => { if (action !== 'in') { camera.changeAction('in'); setAction('in') } }}>Vào ca</button>
+        <button type="button" className={action === 'out' ? 'tab active' : 'tab'} aria-pressed={action === 'out'} onClick={() => { if (action !== 'out') { camera.changeAction('out'); setAction('out') } }}>Ra ca</button>
+        <span>Đang chấm {action === 'out' ? 'giờ ra' : 'giờ vào'} — có thể đổi khi camera đang bật.</span>
+      </div>
       <div className="camera-layout">
         <CameraView
           videoRef={camera.videoRef}
@@ -85,7 +93,7 @@ export function AttendanceTab() {
         <div className="attendance-confirmations" aria-live="polite">
           {[...recognizedEmployees].map(([employeeId, name]) => {
             const employee = employees.find((item) => item.employee_id === employeeId)
-            const arrivedAt = employee?.is_arrive ? employee.arrived_at : null
+            const arrivedAt = action === 'out' ? employee?.departed_at : employee?.arrived_at
 
             return (
               <div className="attendance-confirmation" key={employeeId}>
@@ -98,12 +106,12 @@ export function AttendanceTab() {
                   <strong>{name}</strong>
                   <span>
                     {arrivedAt
-                      ? `Checked in at ${formatAttendanceTime(arrivedAt)}`
+                      ? `${action === 'out' ? 'Đã ghi giờ ra' : 'Đã ghi giờ vào'}: ${formatAttendanceTime(arrivedAt)}`
                       : 'Recording attendance time…'}
                   </span>
                 </div>
                 <span className="attendance-confirmation-badge">
-                  {arrivedAt ? 'Checked in' : 'Saving'}
+                  {arrivedAt ? 'Đã lưu' : 'Đang lưu'}
                 </span>
               </div>
             )

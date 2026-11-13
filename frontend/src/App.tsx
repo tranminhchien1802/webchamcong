@@ -6,7 +6,7 @@ import './App.css'
 type ActiveTab = 'enrollment' | 'attendance'
 
 function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('enrollment')
+  const [activeTab, setActiveTab] = useState<ActiveTab>('attendance')
 
   return (
     <div className="app-shell">
@@ -21,7 +21,7 @@ function App() {
         </a>
         <div className="header-meta">
           <span className="live-dot" />
-          Local attendance system
+          Chấm công khuôn mặt
         </div>
       </header>
 
@@ -66,8 +66,8 @@ function App() {
       </main>
 
       <footer>
-        <span>Face data stays in your local backend.</span>
-        <span>Prototype · No liveness detection</span>
+        <span>Dữ liệu được lưu qua máy chủ chấm công.</span>
+        <span>Xác minh khuôn mặt thật trước khi ghi công.</span>
       </footer>
     </div>
   )

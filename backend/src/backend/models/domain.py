@@ -24,3 +24,4 @@ class Attendance:
     is_arrive: bool
     arrived_at: datetime
     last_distance: float
+    departed_at: datetime | None = None

@@ -63,6 +63,8 @@ class FaceLivenessDetector:
                 "face liveness check is temporarily unavailable"
             ) from error
 
+        if not face_objects:
+            raise SpoofDetectedError("Không xác minh được khuôn mặt thật; chưa ghi chấm công.")
         for face_object in face_objects:
             is_real = face_object.get("is_real")
             if is_real is None or not bool(is_real):

@@ -34,9 +34,12 @@ create table if not exists public.attendance (
         references public.employees(employee_id) on delete cascade,
     is_arrive boolean not null default true,
     arrived_at timestamptz not null,
+    departed_at timestamptz,
     last_distance double precision not null,
     constraint attendance_employee_day_pk
-        primary key (attendance_date, employee_id)
+        primary key (attendance_date, employee_id),
+    constraint attendance_departure_after_arrival
+        check (departed_at is null or departed_at >= arrived_at)
 );
 
 create index if not exists attendance_employee_id_index

@@ -1,9 +1,9 @@
 """Camera-frame face recognition route."""
 
 import logging
-from typing import Annotated
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 
 from backend.api.dependencies import get_core
 from backend.api.errors import as_http_exception, database_http_exception
@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 def recognize_faces(
     image: Annotated[UploadFile, File()],
     core: Annotated[CoreServices, Depends(get_core)],
+    action: Annotated[Literal["in", "out"], Form()] = "in",
 ) -> RecognitionResponse:
     logger.info(
         "Recognition requested | filename=%r | content_type=%r",
@@ -32,7 +33,10 @@ def recognize_faces(
         image_bytes = core.upload_service.read_image(
             image.file, image.filename, image.content_type
         )
-        response = core.recognition_service.recognize_and_mark_arrival(image_bytes)
+        if action == "out":
+            response = core.recognition_service.recognize_and_mark_arrival(image_bytes, action)
+        else:
+            response = core.recognition_service.recognize_and_mark_arrival(image_bytes)
         logger.info(
             "Recognition completed | image_bytes=%d | faces=%d | matched=%d | attendance_updated=%s",
             len(image_bytes),

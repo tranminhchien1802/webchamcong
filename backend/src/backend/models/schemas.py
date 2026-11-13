@@ -22,6 +22,7 @@ class EmployeeAttendance(BaseModel):
     name: str
     is_arrive: bool
     arrived_at: datetime | None
+    departed_at: datetime | None = None
 
 
 class FaceLocationResponse(BaseModel):

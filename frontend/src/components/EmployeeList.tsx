@@ -7,11 +7,12 @@ interface EmployeeListProps {
 }
 
 function formatArrival(value: string | null): string {
-  if (!value) return 'Not arrived'
+  if (!value) return '—'
   return new Intl.DateTimeFormat(undefined, {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
+    timeZone: 'Asia/Ho_Chi_Minh',
   }).format(new Date(value))
 }
 
@@ -56,7 +57,8 @@ export function EmployeeList({ employees, loading, error }: EmployeeListProps) {
                 <span className="employee-id">{employee.employee_id}</span>
               </span>
               <span className={`arrival-time${employee.is_arrive ? ' arrived' : ''}`}>
-                {formatArrival(employee.arrived_at)}
+                <span>Vào: {formatArrival(employee.arrived_at)}</span><br />
+                <span>Ra: {formatArrival(employee.departed_at)}</span>
               </span>
             </li>
           ))}

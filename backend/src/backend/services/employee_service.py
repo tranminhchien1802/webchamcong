@@ -101,6 +101,10 @@ class EmployeeService:
                 employee_id=employee.employee_id,
                 name=employee.name,
                 is_arrive=employee.employee_id in attendance_by_employee,
+                departed_at=(
+                    attendance_by_employee[employee.employee_id].departed_at
+                    if employee.employee_id in attendance_by_employee else None
+                ),
                 arrived_at=(
                     attendance_by_employee[employee.employee_id].arrived_at
                     if employee.employee_id in attendance_by_employee

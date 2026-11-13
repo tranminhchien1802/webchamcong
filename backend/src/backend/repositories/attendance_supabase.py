@@ -60,4 +60,19 @@ class AttendanceSupabaseRepository:
             is_arrive=bool(row["is_arrive"]),
             arrived_at=datetime.fromisoformat(str(row["arrived_at"]).replace("Z", "+00:00")),
             last_distance=float(row["last_distance"]),
+            departed_at=datetime.fromisoformat(str(row["departed_at"]).replace("Z", "+00:00")) if row.get("departed_at") else None,
         )
+
+    def mark_departed(self, employee_id: str, departed_at: datetime, distance: float) -> bool:
+        updated = self._client.request(
+            "PATCH", "attendance",
+            query={
+                "employee_id": f"eq.{employee_id}",
+                "attendance_date": f"eq.{departed_at.date().isoformat()}",
+                "departed_at": "is.null",
+                "arrived_at": f"lte.{departed_at.isoformat()}",
+            },
+            payload={"departed_at": departed_at.isoformat(), "last_distance": distance},
+            prefer="return=representation",
+        )
+        return bool(updated)

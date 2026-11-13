@@ -11,6 +11,7 @@ from backend.services.employee_service import (
 from backend.services.face_encoder import FaceEncodingError
 from backend.services.image_loader import InvalidImageError
 from backend.services.upload_service import UploadValidationError
+from backend.services.attendance_service import AttendanceValidationError
 
 
 def as_http_exception(error: ValueError) -> HTTPException:
@@ -19,7 +20,7 @@ def as_http_exception(error: ValueError) -> HTTPException:
     if isinstance(error, UploadValidationError):
         return HTTPException(status_code=error.status_code, detail=str(error))
     if isinstance(
-        error, (InvalidEmployeeNameError, FaceEncodingError, InvalidImageError)
+        error, (InvalidEmployeeNameError, FaceEncodingError, InvalidImageError, AttendanceValidationError)
     ):
         return HTTPException(status_code=422, detail=str(error))
     return HTTPException(status_code=500, detail="internal application error")

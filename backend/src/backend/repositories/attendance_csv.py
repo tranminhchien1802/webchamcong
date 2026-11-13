@@ -16,6 +16,7 @@ FIELDS = (
     "is_arrive",
     "arrived_at",
     "last_distance",
+    "departed_at",
 )
 logger = logging.getLogger(__name__)
 
@@ -97,6 +98,7 @@ class AttendanceCsvRepository:
             "is_arrive": str(attendance.is_arrive).lower(),
             "arrived_at": attendance.arrived_at.isoformat(),
             "last_distance": attendance.last_distance,
+            "departed_at": attendance.departed_at.isoformat() if attendance.departed_at else "",
         }
 
     @staticmethod
@@ -107,4 +109,20 @@ class AttendanceCsvRepository:
             is_arrive=row["is_arrive"].casefold() == "true",
             arrived_at=datetime.fromisoformat(row["arrived_at"]),
             last_distance=float(row["last_distance"]),
+            departed_at=datetime.fromisoformat(row["departed_at"]) if row.get("departed_at") else None,
         )
+
+    def mark_departed(self, employee_id: str, departed_at: datetime, distance: float) -> bool:
+        with self._lock:
+            rows = read_rows(self._path)
+            for row in rows:
+                if row["employee_id"] == employee_id and row["attendance_date"] == departed_at.date().isoformat():
+                    if row.get("departed_at"):
+                        return False
+                    if departed_at < datetime.fromisoformat(row["arrived_at"]):
+                        raise ValueError("Giờ ra không thể trước giờ vào.")
+                    row["departed_at"] = departed_at.isoformat()
+                    row["last_distance"] = distance
+                    atomic_write_rows(self._path, FIELDS, rows)
+                    return True
+            raise ValueError("Chưa có giờ vào hôm nay.")

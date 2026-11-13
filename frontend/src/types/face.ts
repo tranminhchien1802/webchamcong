@@ -9,6 +9,7 @@ export interface EmployeeAttendance {
   name: string
   is_arrive: boolean
   arrived_at: string | null
+  departed_at: string | null
 }
 
 export interface FaceLocation {

@@ -72,7 +72,7 @@ class ApiTests(unittest.TestCase):
             self.app.state.core.face_recognizer,
             "recognize",
             return_value=[recognized],
-        ):
+        ), patch.object(self.app.state.core.face_liveness_detector, "check"):
             recognition = self._request(
                 "POST",
                 "/api/recognize",
@@ -90,6 +90,29 @@ class ApiTests(unittest.TestCase):
         self.assertEqual(attendance.status_code, 200)
         self.assertTrue(attendance.json()[0]["is_arrive"])
         self.assertIsNotNone(attendance.json()[0]["arrived_at"])
+
+        with patch.object(self.app.state.core.face_recognizer, "recognize", return_value=[recognized]), patch.object(self.app.state.core.face_liveness_detector, "check"):
+            checkout = self._request("POST", "/api/recognize", fields={"action": "out"}, image=("alice.jpg", b"fake-jpeg", "image/jpeg"))
+        self.assertEqual(checkout.status_code, 200)
+        self.assertEqual(checkout.json()["attendance_updated"], ["emp_001"])
+        saved = self._request("GET", "/api/attendance").json()[0]
+        self.assertGreaterEqual(saved["departed_at"], saved["arrived_at"])
+
+    def test_spoof_does_not_record_attendance(self):
+        from backend.services.face_liveness import SpoofDetectedError
+        self._enroll_alice()
+        with patch.object(self.app.state.core.face_liveness_detector, "check", side_effect=SpoofDetectedError("photo or screen replay")):
+            response = self._request("POST", "/api/recognize", image=("alice.jpg", b"fake-jpeg", "image/jpeg"))
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(self._request("GET", "/api/attendance").json()[0]["is_arrive"])
+
+    def test_multiple_faces_do_not_record_attendance(self):
+        self._enroll_alice()
+        match = RecognitionResult("emp_001", "Alice Nguyen", 0.2, (10, 80, 90, 20))
+        with patch.object(self.app.state.core.face_liveness_detector, "check"), patch.object(self.app.state.core.face_recognizer, "recognize", return_value=[match, match]):
+            response = self._request("POST", "/api/recognize", image=("alice.jpg", b"fake-jpeg", "image/jpeg"))
+        self.assertEqual(response.status_code, 422)
+        self.assertFalse(self._request("GET", "/api/attendance").json()[0]["is_arrive"])
 
     def test_duplicate_name_returns_conflict(self) -> None:
         self.assertEqual(self._enroll_alice().status_code, 201)

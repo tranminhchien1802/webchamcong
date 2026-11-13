@@ -80,7 +80,9 @@ class FaceRecognizer:
             best_index = int(np.argmin(distances))
             best_distance = float(distances[best_index])
 
-            if best_distance <= self._settings.recognition_tolerance:
+            alternatives = [float(distance) for index, distance in enumerate(distances) if known[index].employee_id != known[best_index].employee_id]
+            unambiguous = not alternatives or min(alternatives) - best_distance >= 0.05
+            if np.isfinite(distances).all() and best_distance <= self._settings.recognition_tolerance and unambiguous:
                 match = known[best_index]
                 results.append(
                     RecognitionResult(
@@ -125,7 +127,7 @@ class FaceRecognizer:
         encodings: list[np.ndarray] = []
         for known_face in known_faces:
             encoding = np.asarray(known_face.encoding, dtype=np.float64)
-            if encoding.shape != (128,):
+            if encoding.shape != (128,) or not np.isfinite(encoding).all():
                 raise InvalidKnownFaceError(
                     f"encoding for employee {known_face.employee_id!r} must have 128 values"
                 )

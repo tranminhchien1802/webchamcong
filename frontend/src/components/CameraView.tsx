@@ -21,7 +21,7 @@ const cameraLabels: Record<CameraState, { title: string; detail: string }> = {
   idle: { title: 'Camera paused', detail: 'Start when you are ready' },
   requesting: { title: 'Requesting camera', detail: 'Waiting for browser permission' },
   active: { title: 'Camera active', detail: 'Scanning every second' },
-  'permission-denied': { title: 'Permission denied', detail: 'Camera access is blocked' },
+  'permission-denied': { title: 'Chưa có quyền camera', detail: 'Chọn Luôn cho phép camera trong cài đặt trang web' },
   unavailable: { title: 'Camera unavailable', detail: 'Check your camera connection' },
 }
 
@@ -144,6 +144,8 @@ export function CameraView({
         <strong>Recognition</strong>
         <span>{recognitionMessage(recognitionState, faces, hasEmployees, error)}</span>
       </div>
+      <p>Để trình duyệt nhớ quyền camera, chọn “Luôn cho phép” cho địa chỉ web này.
+        Ảnh được tự lưu riêng cho mỗi lần vào và ra thành công.</p>
     </div>
   )
 }

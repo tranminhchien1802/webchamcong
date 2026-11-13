@@ -61,9 +61,11 @@ export function getEmployees(signal?: AbortSignal): Promise<EmployeeAttendance[]
 export async function recognizeFrame(
   image: Blob,
   signal?: AbortSignal,
+  action: 'in' | 'out' = 'in',
 ): Promise<RecognitionResponse> {
   const body = new FormData()
   body.append('image', image, 'camera-frame.jpg')
+  body.append('action', action)
   return request<RecognitionResponse>('/api/recognize', {
     method: 'POST',
     body,

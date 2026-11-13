@@ -8,6 +8,16 @@ from backend.services.face_recognizer import FaceRecognizer, KnownFace
 
 
 class FaceRecognizerTests(unittest.TestCase):
+    @patch("backend.services.face_recognizer.face_recognition.face_distance")
+    @patch("backend.services.face_recognizer.face_recognition.face_encodings")
+    @patch("backend.services.face_recognizer.face_recognition.face_locations")
+    def test_ambiguous_identity_is_not_matched(self, locations, encodings, distances):
+        locations.return_value = [(10, 80, 90, 20)]
+        encodings.return_value = [np.full(128, 0.1)]
+        distances.return_value = np.array([0.30, 0.32])
+        result = self.recognizer.recognize(self.image, self.known_faces)[0]
+        self.assertFalse(result.matched)
+
     def setUp(self) -> None:
         self.image = np.zeros((100, 200, 3), dtype=np.uint8)
         self.recognizer = FaceRecognizer(

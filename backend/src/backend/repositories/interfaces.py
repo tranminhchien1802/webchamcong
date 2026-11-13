@@ -17,6 +17,10 @@ class EmployeeRepository(Protocol):
 
 
 class AttendanceRepository(Protocol):
+    def mark_departed(
+        self, employee_id: str, departed_at: datetime, distance: float
+    ) -> bool: ...
+
     def list_for_date(self, attendance_date: date) -> list[Attendance]: ...
 
     def mark_arrived(

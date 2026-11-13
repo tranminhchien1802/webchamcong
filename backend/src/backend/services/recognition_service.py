@@ -10,7 +10,7 @@ from backend.models.schemas import (
     RecognizedFaceResponse,
 )
 from backend.repositories.interfaces import EmployeeRepository
-from backend.services.attendance_service import AttendanceService
+from backend.services.attendance_service import AttendanceService, AttendanceValidationError
 from backend.services.face_liveness import FaceLivenessDetector
 from backend.services.face_recognizer import FaceRecognizer, KnownFace
 
@@ -30,7 +30,9 @@ class RecognitionService:
         self._face_recognizer = face_recognizer
         self._face_liveness_detector = face_liveness_detector
 
-    def recognize_and_mark_arrival(self, image: bytes) -> RecognitionResponse:
+    def recognize_and_mark_arrival(self, image: bytes, action: str = "in") -> RecognitionResponse:
+        if action not in {"in", "out"}:
+            raise AttendanceValidationError("Invalid attendance action")
         self._face_liveness_detector.check(image)
         employees = self._employees.list_all()
         known_faces = [
@@ -47,6 +49,8 @@ class RecognitionService:
             len(known_faces),
         )
         results = self._face_recognizer.recognize(image, known_faces)
+        if len(results) > 1:
+            raise AttendanceValidationError("Chỉ một người được đứng trước camera khi chấm công.")
         logger.info(
             "Face detection completed | detected=%d | matched=%d | unknown=%d",
             len(results),
@@ -75,8 +79,9 @@ class RecognitionService:
                     )
                 continue
             processed_employee_ids.add(result.employee_id)
-            created = self._attendance.mark_arrived(
-                result.employee_id, result.distance
+            record = self._attendance.mark_departed if action == "out" else self._attendance.mark_arrived
+            created = record(
+                result.employee_id, result.distance, image
             )
             logger.info(
                 "Face matched | employee_id=%s | name=%r | distance=%.4f | "
